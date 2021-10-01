@@ -7,12 +7,12 @@ import numpy as np
 import torch
 import wandb
 
-#sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
-#sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../.."))
-#sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../.."))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../")))
 
 from fedml_api.standalone.hierarchical_fl.trainer import Trainer
+from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelTrainer as MyModelTrainerCLS
+from fedml_api.standalone.fedavg.my_model_trainer_nwp import MyModelTrainer as MyModelTrainerNWP
+from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import MyModelTrainer as MyModelTrainerTAG
 from fedml_experiments.standalone.fedavg.main_fedavg import add_args, load_data, create_model
 
 if __name__ == "__main__":
@@ -53,5 +53,12 @@ if __name__ == "__main__":
     logging.info(model)
 
     #trainer = Trainer(dataset, model, device, args)
-    trainer = Trainer(dataset, device, args, model)
+
+    if args.dataset == "stackoverflow_lr":
+        model_trainer = MyModelTrainerTAG(model)
+    elif args.dataset in ["fed_shakespeare", "stackoverflow_nwp"]:
+        model_trainer = MyModelTrainerNWP(model)
+    else: # default model trainer is for classification problem
+        model_trainer = MyModelTrainerCLS(model)
+    trainer = Trainer(dataset, device, args, model_trainer)
     trainer.train()
