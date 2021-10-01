@@ -7,6 +7,9 @@ import numpy as np
 import torch
 import wandb
 
+#sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
+#sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../.."))
+#sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../.."))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../")))
 
 from fedml_api.standalone.hierarchical_fl.trainer import Trainer
@@ -49,5 +52,6 @@ if __name__ == "__main__":
     model = create_model(args, model_name=args.model, output_dim=dataset[7])
     logging.info(model)
 
-    trainer = Trainer(dataset, model, device, args)
+    #trainer = Trainer(dataset, model, device, args)
+    trainer = Trainer(dataset, device, args, model)
     trainer.train()
