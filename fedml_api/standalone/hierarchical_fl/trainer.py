@@ -41,7 +41,7 @@ class Trainer(FedAvgAPI):
         return group_to_client_indexes
 
     def train(self):
-        w_global = self.model_trainer.state_dict()
+        w_global = self.model_trainer.model.state_dict()
         for global_round_idx in range(self.args.global_comm_round):
             logging.info("################Global Communication Round : {}".format(global_round_idx))
             group_to_client_indexes = self.client_sampling(global_round_idx, self.args.client_num_in_total,
@@ -65,5 +65,5 @@ class Trainer(FedAvgAPI):
                 # evaluate performance
                 if global_epoch % self.args.frequency_of_the_test == 0 or \
                     global_epoch == self.args.global_comm_round*self.args.group_comm_round*self.args.epochs-1:
-                    self.model_trainer.load_state_dict(w_global)
+                    self.model_trainer.model.load_state_dict(w_global)
                     self.local_test_on_all_clients(self.model_trainer, global_epoch)
