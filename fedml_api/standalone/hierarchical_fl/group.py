@@ -1,9 +1,9 @@
 import logging
 
 from fedml_api.standalone.hierarchical_fl.client import Client
-from fedml_api.standalone.fedavg.fedavg_trainer import FedAvgTrainer
+from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
-class Group(FedAvgTrainer):
+class Group(FedAvgAPI):
 
     def __init__(self, idx, total_client_indexes, train_data_local_dict, test_data_local_dict, train_data_local_num_dict, args, device, model):
         self.idx = idx

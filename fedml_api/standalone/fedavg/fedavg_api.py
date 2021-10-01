@@ -27,7 +27,7 @@ class FedAvgAPI(object):
         self.test_data_local_dict = test_data_local_dict
 
         self.model_trainer = model_trainer
-        self._setup_clients(train_data_local_num_dict, train_data_local_dict, test_data_local_dict, model_trainer)
+        self._setup_clients(train_data_local_num_dict, train_data_local_dict, test_data_local_dict)
 
     def _setup_clients(self, train_data_local_num_dict, train_data_local_dict, test_data_local_dict, model_trainer):
         logging.info("############setup_clients (START)#############")
