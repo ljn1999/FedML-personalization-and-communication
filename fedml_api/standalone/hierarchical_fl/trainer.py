@@ -66,4 +66,4 @@ class Trainer(FedAvgAPI):
                 if global_epoch % self.args.frequency_of_the_test == 0 or \
                     global_epoch == self.args.global_comm_round*self.args.group_comm_round*self.args.epochs-1:
                     self.model_trainer.model.load_state_dict(w_global)
-                    self._local_test_on_all_clients(self.model_trainer, global_epoch)
+                    self._local_test_on_all_clients(global_epoch)
