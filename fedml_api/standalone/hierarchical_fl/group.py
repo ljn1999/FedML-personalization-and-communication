@@ -5,7 +5,7 @@ from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
 class Group(FedAvgAPI):
 
-    def __init__(self, idx, total_client_indexes, train_data_local_dict, test_data_local_dict, train_data_local_num_dict, args, device, model):
+    def __init__(self, idx, total_client_indexes, train_data_local_dict, test_data_local_dict, train_data_local_num_dict, args, device, model_trainer):
         self.idx = idx
         self.args = args
         self.device = device
@@ -13,7 +13,7 @@ class Group(FedAvgAPI):
         self.train_data_local_num_dict = train_data_local_num_dict
         for client_idx in total_client_indexes:
             self.client_dict[client_idx] = Client(client_idx, train_data_local_dict[client_idx], test_data_local_dict[client_idx],
-                       train_data_local_num_dict[client_idx], args, device, model)
+                       train_data_local_num_dict[client_idx], args, device, model_trainer)
 
     def get_sample_number(self, sampled_client_indexes):
         self.group_sample_number = 0
@@ -39,7 +39,7 @@ class Group(FedAvgAPI):
             # aggregate local weights
             for global_epoch in sorted(w_locals_dict.keys()):
                 w_locals = w_locals_dict[global_epoch]
-                w_group_list.append((global_epoch, self.aggregate(w_locals)))
+                w_group_list.append((global_epoch, self._aggregate(w_locals)))
 
             # update the group weight
             w_group = w_group_list[-1][1]

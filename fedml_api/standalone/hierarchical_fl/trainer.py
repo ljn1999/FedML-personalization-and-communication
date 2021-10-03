@@ -60,7 +60,7 @@ class Trainer(FedAvgAPI):
             # aggregate group weights into the global weight
             for global_epoch in sorted(w_groups_dict.keys()):
                 w_groups = w_groups_dict[global_epoch]
-                w_global = self.aggregate(w_groups)
+                w_global = self._aggregate(w_groups)
 
                 # evaluate performance
                 if global_epoch % self.args.frequency_of_the_test == 0 or \
