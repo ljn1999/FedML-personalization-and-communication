@@ -127,6 +127,7 @@ class CNN_DropOut(torch.nn.Module):
 
     def forward(self, x):
         x = torch.unsqueeze(x, 1)
+        x = torch.reshape(x, [-1, 1, 28, 28])
         x = self.conv2d_1(x)
         x = self.relu(x)
         x = self.conv2d_2(x)
