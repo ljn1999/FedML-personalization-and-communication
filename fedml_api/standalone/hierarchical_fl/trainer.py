@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+import math
 
 from fedml_api.standalone.hierarchical_fl.group import Group
 from fedml_api.standalone.hierarchical_fl.client import Client
@@ -9,6 +10,8 @@ class Trainer(FedAvgAPI):
 
     def _setup_clients(self, train_data_local_num_dict, train_data_local_dict, test_data_local_dict):
         logging.info("############setup_clients (START)#############")
+        # Assign a group index to each client
+        # Create a dict group_to_client_indexes whose key is the group index and the value is a list of client indexes in that group
         if self.args.group_method == 'random':
             self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
             group_to_client_indexes = {}
@@ -37,6 +40,24 @@ class Trainer(FedAvgAPI):
             if not group_idx in group_to_client_indexes:
                 group_to_client_indexes[group_idx] = []
             group_to_client_indexes[group_idx].append(client_idx)
+        logging.info("client_indexes of each group = {}".format(group_to_client_indexes))
+        return group_to_client_indexes
+    
+    # Dynamic sampling test
+    def client_sampling_dynamic(self, global_round_idx, client_num_in_total, client_num_per_round):
+        # For global sampling, we ignore the argument client_num_per_round passed in by the user
+        sampled_client_indexes = super()._client_sampling(global_round_idx, client_num_in_total, client_num_in_total)
+        group_to_client_indexes = {}
+        for client_idx in sampled_client_indexes:
+            group_idx = self.group_indexes[client_idx]
+            if not group_idx in group_to_client_indexes:
+                group_to_client_indexes[group_idx] = []
+            group_to_client_indexes[group_idx].append(client_idx)
+        # Apply dynamic sampling to each group
+        for group_idx, client_indexes in group_to_client_indexes.items():
+            num_clients = math.ceil(pow(0.9, global_round_idx) * len(client_indexes))
+            np.random.seed(global_round_idx)  # make sure for each comparison, we are selecting the same clients each round
+            group_to_client_indexes[group_idx] = np.random.choice(client_indexes, num_clients, replace=False)
         logging.info("client_indexes of each group = {}".format(group_to_client_indexes))
         return group_to_client_indexes
 
