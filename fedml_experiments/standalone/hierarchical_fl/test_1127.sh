@@ -4,13 +4,13 @@ GPU=0
 
 CLIENT_NUM=3
 
-WORKER_NUM=10
+WORKER_NUM=2
 
 BATCH_SIZE=128
 
-DATASET='mnist'
+DATASET='femnist'
 
-DATA_PATH='./../../../data/MNIST'
+DATA_PATH='./../../../data/FederatedEMNIST/datasets'
 
 MODEL='cnn'
 
@@ -22,15 +22,15 @@ OPT=adam
 
 GROUP_METHOD='random'
 
-GROUP_NUM=1
+GROUP_NUM=3
 
 GLOBAL_COMM_ROUND=3
 
-GROUP_COMM_ROUND=3
+GROUP_COMM_ROUND=4
 
-EPOCH=2
+EPOCH=6
 
-python3 ./main.py \
+python ./main.py \
 --gpu $GPU \
 --client_num_in_total $CLIENT_NUM \
 --client_num_per_round $WORKER_NUM \

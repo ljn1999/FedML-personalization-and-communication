@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-
 class CNN_OriginalFedAvg(torch.nn.Module):
     """The CNN model used in the original FedAvg paper:
     "Communication-Efficient Learning of Deep Networks from Decentralized Data"

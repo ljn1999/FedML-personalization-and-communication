@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import sys
+import time
 
 import numpy as np
 import torch
@@ -28,7 +29,8 @@ if __name__ == "__main__":
                         help='the number of group communications within a global communication')
     args = parser.parse_args()
     logger.info(args)
-    device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
     logger.info(device)
 
     wandb.init(
@@ -60,5 +62,10 @@ if __name__ == "__main__":
         model_trainer = MyModelTrainerNWP(model)
     else: # default model trainer is for classification problem
         model_trainer = MyModelTrainerCLS(model)
+    
     trainer = Trainer(dataset, device, args, model_trainer)
+    # Add timer here to record time of the training process
+    start_time = time.perf_counter()
     trainer.train()
+    total_time = time.perf_counter() - start_time
+    logging.info("***********TOTAL TIME TAKEN FOR TRAINING: {} seconds ************".format(total_time))
