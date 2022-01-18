@@ -16,7 +16,7 @@ MODEL='cnn'
 
 DISTRIBUTION='hetero'
 
-LR=0.001
+LR=0.01
 
 OPT=adam
 
@@ -26,9 +26,9 @@ GROUP_NUM=3
 
 GLOBAL_COMM_ROUND=3
 
-GROUP_COMM_ROUND=4
+GROUP_COMM_ROUND=5
 
-EPOCH=6
+EPOCH=10
 
 python ./main.py \
 --gpu $GPU \
