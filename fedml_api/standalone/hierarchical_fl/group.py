@@ -30,11 +30,15 @@ class Group(FedAvgAPI):
             w_locals_dict = {}
 
             # train each client
+            client_to_gradient_dict = {}
             for client in sampled_client_list:
                 w_local_list, client_accum_gradient = client.train(global_round_idx, group_round_idx, w_group)
+                client_to_gradient_dict[client] = client_accum_gradient
                 for global_epoch, w in w_local_list:
                     if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []
                     w_locals_dict[global_epoch].append((client.get_sample_number(), w))
+            client_to_gradient_dict = dict(sorted(client_to_gradient_dict.items(), key=lambda item: item[1], reverse=True))
+            # todo: Sample the top k clients
 
             # aggregate local weights
             for global_epoch in sorted(w_locals_dict.keys()):
