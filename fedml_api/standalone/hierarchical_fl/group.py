@@ -1,4 +1,5 @@
 import logging
+import copy
 
 from fedml_api.standalone.hierarchical_fl.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
@@ -11,6 +12,7 @@ class Group(FedAvgAPI):
         self.device = device
         self.client_dict = {}
         self.train_data_local_num_dict = train_data_local_num_dict
+        self.weights = {}
         for client_idx in total_client_indexes:
             self.client_dict[client_idx] = Client(client_idx, train_data_local_dict[client_idx], test_data_local_dict[client_idx],
                        train_data_local_num_dict[client_idx], args, device, model_trainer)
@@ -21,9 +23,22 @@ class Group(FedAvgAPI):
             self.group_sample_number += self.train_data_local_num_dict[client_idx]
         return self.group_sample_number
 
-    def train(self, global_round_idx, w, sampled_client_indexes):
+    def train(self, global_round_idx, w, sampled_client_indexes, personalize=False):
         sampled_client_list = [self.client_dict[client_idx] for client_idx in sampled_client_indexes]
-        w_group = w
+        
+        # need to get the group model and only update the global layer
+        if personalize:
+            if global_round_idx == 0:
+                w_group = w
+                self.weights = copy.deepcopy(w)
+            else:
+                w_group = copy.deepcopy(self.weights) # get the current group model                
+                print("network keys: ", w_group.keys())
+                for k in list(w_group.keys())[0:2]: # for the global layer (conv2d_1.weight and conv2d_1.bias)
+                    w_group[k] = copy.deepcopy(w[k]) 
+        else:
+            w_group = w
+
         w_group_list = []
         for group_round_idx in range(self.args.group_comm_round):
             logging.info("Group ID : {} / Group Communication Round : {}".format(self.idx, group_round_idx))
@@ -31,7 +46,7 @@ class Group(FedAvgAPI):
 
             # train each client
             for client in sampled_client_list:
-                w_local_list = client.train(global_round_idx, group_round_idx, w_group)
+                w_local_list = client.train(global_round_idx, group_round_idx, w_group, personalize)
                 for global_epoch, w in w_local_list:
                     if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []
                     w_locals_dict[global_epoch].append((client.get_sample_number(), w))
@@ -43,4 +58,5 @@ class Group(FedAvgAPI):
 
             # update the group weight
             w_group = w_group_list[-1][1]
+            self.weights = copy.deepcopy(w_group)
         return w_group_list

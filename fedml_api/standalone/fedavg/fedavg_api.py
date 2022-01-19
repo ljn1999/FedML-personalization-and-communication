@@ -10,7 +10,7 @@ from fedml_api.standalone.fedavg.client import Client
 
 
 class FedAvgAPI(object):
-    def __init__(self, dataset, device, args, model_trainer):
+    def __init__(self, dataset, device, args, model_trainer, personalize=False):
         self.device = device
         self.args = args
         [train_data_num, test_data_num, train_data_global, test_data_global,
@@ -27,9 +27,22 @@ class FedAvgAPI(object):
         self.test_data_local_dict = test_data_local_dict
 
         self.model_trainer = model_trainer
-        self._setup_clients(train_data_local_num_dict, train_data_local_dict, test_data_local_dict)
+        if not personalize:
+            self.personalize = False
+            self._setup_clients(train_data_local_num_dict, train_data_local_dict, test_data_local_dict)
+        else:
+            self.personalize = True
+            self._setup_clients_personalize(train_data_local_num_dict, train_data_local_dict, test_data_local_dict)
 
     def _setup_clients(self, train_data_local_num_dict, train_data_local_dict, test_data_local_dict, model_trainer):
+        logging.info("############setup_clients (START)#############")
+        for client_idx in range(self.args.client_num_per_round):
+            c = Client(client_idx, train_data_local_dict[client_idx], test_data_local_dict[client_idx],
+                       train_data_local_num_dict[client_idx], self.args, self.device, model_trainer)
+            self.client_list.append(c)
+        logging.info("############setup_clients (END)#############")
+    
+    def _setup_clients_personalize(self, train_data_local_num_dict, train_data_local_dict, test_data_local_dict, model_trainer):
         logging.info("############setup_clients (START)#############")
         for client_idx in range(self.args.client_num_per_round):
             c = Client(client_idx, train_data_local_dict[client_idx], test_data_local_dict[client_idx],
@@ -139,6 +152,9 @@ class FedAvgAPI(object):
             """
             if self.test_data_local_dict[client_idx] is None:
                 continue
+            
+            if self.personalize:
+                client = self.client_list[client_idx]
             client.update_local_dataset(0, self.train_data_local_dict[client_idx],
                                         self.test_data_local_dict[client_idx],
                                         self.train_data_local_num_dict[client_idx])

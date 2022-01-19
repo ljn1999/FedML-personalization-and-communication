@@ -14,6 +14,7 @@ class Client:
         self.args = args
         self.device = device
         self.model_trainer = model_trainer
+        self.weights = {}
 
     def update_local_dataset(self, client_idx, local_training_data, local_test_data, local_sample_number):
         self.client_idx = client_idx

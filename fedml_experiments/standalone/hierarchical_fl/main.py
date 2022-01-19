@@ -60,5 +60,6 @@ if __name__ == "__main__":
         model_trainer = MyModelTrainerNWP(model)
     else: # default model trainer is for classification problem
         model_trainer = MyModelTrainerCLS(model)
-    trainer = Trainer(dataset, device, args, model_trainer)
-    trainer.train()
+    personalize = False
+    trainer = Trainer(dataset, device, args, model_trainer, personalize)
+    trainer.train(personalize)
