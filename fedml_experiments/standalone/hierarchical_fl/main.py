@@ -26,6 +26,7 @@ if __name__ == "__main__":
     parser.add_argument('--global_comm_round', type=int, default=10, help='the number of global communications')
     parser.add_argument('--group_comm_round', type=int, default=10,
                         help='the number of group communications within a global communication')
+    parser.add_argument('--personalize', type=int, default=0)
     args = parser.parse_args()
     logger.info(args)
     device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")
@@ -60,6 +61,9 @@ if __name__ == "__main__":
         model_trainer = MyModelTrainerNWP(model)
     else: # default model trainer is for classification problem
         model_trainer = MyModelTrainerCLS(model)
-    personalize = False
+    if args.personalize == 1:
+        personalize = True
+    else:
+        personalize = False
     trainer = Trainer(dataset, device, args, model_trainer, personalize)
     trainer.train(personalize)

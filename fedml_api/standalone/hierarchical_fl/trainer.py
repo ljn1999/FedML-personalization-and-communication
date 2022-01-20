@@ -75,6 +75,13 @@ class Trainer(FedAvgAPI):
             w_groups_dict = {}
             for group_idx in sorted(group_to_client_indexes.keys()):
                 sampled_client_indexes = group_to_client_indexes[group_idx]
+
+                ##################################
+                if personalize:
+                    for idx in sampled_client_indexes:
+                        self.client_list[idx].sampled = True
+                ##################################
+
                 group = self.group_dict[group_idx]
                 w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes, personalize)
                 for global_epoch, w in w_group_list:
@@ -82,6 +89,17 @@ class Trainer(FedAvgAPI):
                     w_groups_dict[global_epoch].append((group.get_sample_number(sampled_client_indexes), w))
                 ####group_weight_dict[group_idx] = w_group_list[-1][1]
 
+            ###################################
+            # update self.client_list
+            if personalize:
+                for group_idx in sorted(group_to_client_indexes.keys()):
+                    sampled_client_indexes = group_to_client_indexes[group_idx]
+                    group = self.group_dict[group_idx]
+                    sampled_client_list = [group.client_dict[client_idx] for client_idx in sampled_client_indexes]
+                    for client in sampled_client_list:
+                        self.client_list[client.client_idx].model_trainer.model.load_state_dict(client.model_trainer.model.state_dict())
+            ###################################  
+            
             # aggregate group weights into the global weight
             for global_epoch in sorted(w_groups_dict.keys()):
                 w_groups = w_groups_dict[global_epoch]
@@ -92,4 +110,10 @@ class Trainer(FedAvgAPI):
                     global_epoch == self.args.global_comm_round*self.args.group_comm_round*self.args.epochs-1:
                     if not personalize:
                         self.model_trainer.model.load_state_dict(w_global)
+                    #############################################
+                    else:
+                        for client_idx in range(self.args.client_num_in_total):
+                            if self.client_list[client_idx].sampled == False:
+                                self.client_list[client_idx].model_trainer.model.load_state_dict(w_global)
+                    #############################################
                     self._local_test_on_all_clients(global_epoch)
