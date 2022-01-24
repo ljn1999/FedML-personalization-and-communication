@@ -9,7 +9,7 @@ class Client:
         self.local_training_data = local_training_data
         self.local_test_data = local_test_data
         self.local_sample_number = local_sample_number
-        logging.info("self.local_sample_number = " + str(self.local_sample_number))
+        #logging.info("self.local_sample_number = " + str(self.local_sample_number))
 
         self.args = args
         self.device = device

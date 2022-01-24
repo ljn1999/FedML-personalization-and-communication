@@ -1,5 +1,6 @@
 import logging
 import math
+import numpy as np
 from fedml_api.standalone.hierarchical_fl.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
@@ -37,16 +38,23 @@ class Group(FedAvgAPI):
                 for global_epoch, w in w_local_list:
                     if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []
                     w_locals_dict[global_epoch].append((client.client_idx, client.get_sample_number(), w))
-            client_to_gradient_dict = dict(sorted(client_to_gradient_dict.items(), key=lambda item: item[1], reverse=True))
-            # Dynamically sample clients
-            num_clients = math.ceil(pow(0.9, global_round_idx) * len(client_list))
-            sampled_client_indexes = []
-            count = 0
+
+            # Calculate sampling probability for each client
+            gradient_sum_all_clients = 0
             for client_idx, gradient in client_to_gradient_dict.items():
-                if count == num_clients:
-                    break
-                count += 1
-                sampled_client_indexes.append(client_idx)
+                gradient_sum_all_clients += gradient
+            client_to_probability_dict = {}
+            for client_idx, gradient in client_to_gradient_dict.items():
+                client_to_probability_dict[client_idx] = gradient / gradient_sum_all_clients
+
+            # Dynamically sample clients
+            client_idx_list = []
+            probability_list = []
+            for client_idx, probability in client_to_probability_dict.items():
+                client_idx_list.append(client_idx)
+                probability_list.append(probability)
+            num_clients = math.ceil(pow(0.9, global_round_idx) * len(client_list))
+            sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, p=probability_list)
             sampled_w_locals_dict = {}
             for global_epoch, c_list in w_locals_dict.items():
                 for tup in c_list:
