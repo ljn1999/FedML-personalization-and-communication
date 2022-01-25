@@ -8,6 +8,8 @@ from fedml_api.standalone.fedavg.client import Client
 
 class Client(Client):
 
+    client_weight_list = []
+
     def train(self, global_round_idx, group_round_idx, w):
         model = self.model_trainer.model
         model.load_state_dict(w)
@@ -36,4 +38,9 @@ class Client(Client):
                             group_round_idx*self.args.epochs + epoch
             if global_epoch % self.args.frequency_of_the_test == 0 or epoch == self.args.epochs-1:
                 w_list.append((global_epoch, copy.deepcopy(self.model_trainer.model.state_dict())))
-        return w_list, accum_gradient
+        
+        client_weight_list = w_list
+        return accum_gradient
+
+    def send_weight(self):
+        return self.client_weight_list

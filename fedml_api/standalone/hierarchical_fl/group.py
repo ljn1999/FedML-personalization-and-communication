@@ -33,11 +33,8 @@ class Group(FedAvgAPI):
             # train each client
             client_to_gradient_dict = {}
             for client in client_list:
-                w_local_list, client_accum_gradient = client.train(global_round_idx, group_round_idx, w_group)
+                client_accum_gradient = client.train(global_round_idx, group_round_idx, w_group)
                 client_to_gradient_dict[client.client_idx] = client_accum_gradient
-                for global_epoch, w in w_local_list:
-                    if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []
-                    w_locals_dict[global_epoch].append((client.client_idx, client.get_sample_number(), w))
 
             # Calculate sampling probability for each client
             gradient_sum_all_clients = 0
@@ -55,16 +52,15 @@ class Group(FedAvgAPI):
                 probability_list.append(probability)
             num_clients = math.ceil(pow(0.9, global_round_idx) * len(client_list))
             sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, p=probability_list)
-            sampled_w_locals_dict = {}
-            for global_epoch, c_list in w_locals_dict.items():
-                for tup in c_list:
-                    if not tup[0] in sampled_client_indexes:
-                        break
-                    if not global_epoch in sampled_w_locals_dict: sampled_w_locals_dict[global_epoch] = []
-                    sampled_w_locals_dict[global_epoch].append((tup[1], tup[2]))
+            for sampled_client_idx in sampled_client_indexes:
+                w_local_list = self.client_dict[sampled_client_idx].send_weight()
+                for global_epoch, w in w_local_list:
+                        if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []
+                        w_locals_dict[global_epoch].append((client.client_idx, client.get_sample_number(), w))
+
             # aggregate local weights
-            for global_epoch in sorted(sampled_w_locals_dict.keys()):
-                w_locals = sampled_w_locals_dict[global_epoch]
+            for global_epoch in sorted(w_locals_dict.keys()):
+                w_locals = w_locals_dict[global_epoch]
                 w_group_list.append((global_epoch, self._aggregate(w_locals)))
 
             # update the group weight
