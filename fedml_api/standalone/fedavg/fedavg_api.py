@@ -155,11 +155,13 @@ class FedAvgAPI(object):
             
             if self.personalize:
                 client = self.client_list[client_idx]
-            client.update_local_dataset(0, self.train_data_local_dict[client_idx],
+            else:
+                client.update_local_dataset(0, self.train_data_local_dict[client_idx],
                                         self.test_data_local_dict[client_idx],
                                         self.train_data_local_num_dict[client_idx])
             # train data
             train_local_metrics = client.local_test(False)
+            #print(train_local_metrics['test_correct'], train_local_metrics['test_total'])
             train_metrics['num_samples'].append(copy.deepcopy(train_local_metrics['test_total']))
             train_metrics['num_correct'].append(copy.deepcopy(train_local_metrics['test_correct']))
             train_metrics['losses'].append(copy.deepcopy(train_local_metrics['test_loss']))

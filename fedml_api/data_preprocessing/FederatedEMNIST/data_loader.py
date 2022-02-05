@@ -186,7 +186,7 @@ def load_partition_data_federated_emnist(dataset, data_dir, writers, batch_size=
                 client_idx += 1 # update client idx
                 count += 1
 
-        sum_train_clients_num = len(writers)
+        sum_train_clients_num = len(writers)*N
         logging.info("sum_train_clients_num = %d" % sum_train_clients_num)
         logging.info("############Splitting Writers (END)############\n")
 

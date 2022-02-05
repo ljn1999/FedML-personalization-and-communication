@@ -13,10 +13,10 @@ class Client(Client):
                 w_client = w
                 self.weights = copy.deepcopy(w)'''
             if self.weights == {}: # if uninitialized
-                w_client = w
+                w_client = copy.deepcopy(w)
                 self.weights = copy.deepcopy(w)
             else:
-                w_client = self.weights
+                w_client = copy.deepcopy(self.weights)
                 for k in list(w_client.keys())[0:4]: # for the global layer (conv2d_1.weight and conv2d_1.bias)
                                                     # and group layer (conv2d_2.weight and conv2d_2.bias)
                     w_client[k] = copy.deepcopy(w[k]) 
@@ -25,6 +25,8 @@ class Client(Client):
         
         model.load_state_dict(w_client)
         model.to(self.device)
+        '''train_local_metrics = self.local_test(False)
+        print("client idx:", self.client_idx, "w_client acc:", train_local_metrics['test_correct']/train_local_metrics['test_total'])'''
 
         criterion = nn.CrossEntropyLoss().to(self.device)
         if self.args.client_optimizer == "sgd":
@@ -35,6 +37,9 @@ class Client(Client):
 
         w_list = []
         for epoch in range(self.args.epochs):
+            '''if epoch == 0:
+               train_local_metrics = self.local_test(False)
+               print("client idx:", self.client_idx, "right after aggr acc:", train_local_metrics['test_correct']/train_local_metrics['test_total'])'''
             for x, labels in self.local_training_data:
                 x, labels = x.to(self.device), labels.to(self.device)
                 self.model_trainer.model.zero_grad()
@@ -47,4 +52,6 @@ class Client(Client):
             if global_epoch % self.args.frequency_of_the_test == 0 or epoch == self.args.epochs-1:
                 w_list.append((global_epoch, copy.deepcopy(self.model_trainer.model.state_dict())))
             self.weights = copy.deepcopy(self.model_trainer.model.state_dict())
+        '''train_local_metrics = self.local_test(False)
+        print("client idx:", self.client_idx, "after args.epoch training acc:", train_local_metrics['test_correct']/train_local_metrics['test_total'])'''
         return w_list

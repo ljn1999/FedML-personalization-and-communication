@@ -11,7 +11,8 @@ class Trainer(FedAvgAPI):
     def _setup_clients(self, train_data_local_num_dict, train_data_local_dict, test_data_local_dict):
         logging.info("############setup_clients (START)#############")
         if self.args.group_method == 'random':
-            self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
+            #self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
+            self.group_indexes = [0,0,0,1,1,1]
             group_to_client_indexes = {}
             for client_idx, group_idx in enumerate(self.group_indexes):
                 if not group_idx in group_to_client_indexes:
@@ -33,7 +34,8 @@ class Trainer(FedAvgAPI):
     def _setup_clients_personalize(self, train_data_local_num_dict, train_data_local_dict, test_data_local_dict):
         logging.info("############setup_clients (START)#############")
         if self.args.group_method == 'random':
-            self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
+            #self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
+            self.group_indexes = [0, 0, 0, 1, 1, 1]
             group_to_client_indexes = {}
             for client_idx, group_idx in enumerate(self.group_indexes):
                 if not group_idx in group_to_client_indexes:
@@ -84,6 +86,7 @@ class Trainer(FedAvgAPI):
 
                 group = self.group_dict[group_idx]
                 w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes, personalize)
+                self.group_dict[group_idx] = copy.deepcopy(group)
                 for global_epoch, w in w_group_list:
                     if not global_epoch in w_groups_dict: w_groups_dict[global_epoch] = []
                     w_groups_dict[global_epoch].append((group.get_sample_number(sampled_client_indexes), w))
@@ -91,13 +94,17 @@ class Trainer(FedAvgAPI):
 
             ###################################
             # update self.client_list
-            if personalize:
+            '''if personalize:
                 for group_idx in sorted(group_to_client_indexes.keys()):
                     sampled_client_indexes = group_to_client_indexes[group_idx]
                     group = self.group_dict[group_idx]
+                    print("group idx", group_idx, sampled_client_indexes)
                     sampled_client_list = [group.client_dict[client_idx] for client_idx in sampled_client_indexes]
                     for client in sampled_client_list:
-                        self.client_list[client.client_idx].model_trainer.model.load_state_dict(client.model_trainer.model.state_dict())
+                        m = client.local_test(False)
+                        #print(client.client_idx, m['test_correct'], m['test_total'])
+                        self.client_list[client.client_idx].model_trainer.model.load_state_dict(client.model_trainer.model.state_dict())'''
+            #self._local_test_on_all_clients(0)
             ###################################  
             
             # aggregate group weights into the global weight
@@ -114,6 +121,16 @@ class Trainer(FedAvgAPI):
                     else:
                         for client_idx in range(self.args.client_num_in_total):
                             if self.client_list[client_idx].sampled == False:
-                                self.client_list[client_idx].model_trainer.model.load_state_dict(w_global)
+                                pass
+                                #self.client_list[client_idx].model_trainer.model.load_state_dict(w_global)
                     #############################################
+                    if personalize:
+                        for group_idx in sorted(group_to_client_indexes.keys()):
+                            sampled_client_indexes = group_to_client_indexes[group_idx]
+                            group = self.group_dict[group_idx]
+                            sampled_client_list = [group.client_dict[client_idx] for client_idx in sampled_client_indexes]
+                            for client in sampled_client_list:
+                                m = client.local_test(False)
+                                self.client_list[client.client_idx] = copy.deepcopy(client)
+                                #self.client_list[client.client_idx].model_trainer.model.load_state_dict(client.model_trainer.model.state_dict())
                     self._local_test_on_all_clients(global_epoch)

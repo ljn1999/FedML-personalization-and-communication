@@ -3,7 +3,7 @@ GPU=0
 
 CLIENT_NUM=3 # useless for femnist
 
-WORKER_NUM=2
+WORKER_NUM=6
 
 BATCH_SIZE=128 # useless for femnist
 
@@ -15,7 +15,7 @@ MODEL='cnn'
 
 DISTRIBUTION='hetero'
 
-LR=0.01
+LR=0.005
 
 OPT=adam
 
@@ -23,9 +23,9 @@ GROUP_METHOD='random'
 
 GROUP_NUM=2
 
-GLOBAL_COMM_ROUND=3
+GLOBAL_COMM_ROUND=2
 
-GROUP_COMM_ROUND=5
+GROUP_COMM_ROUND=3
 
 EPOCH=10
 
@@ -45,5 +45,5 @@ python ./main.py \
 --global_comm_round $GLOBAL_COMM_ROUND \
 --group_comm_round $GROUP_COMM_ROUND \
 --epochs $EPOCH \
---personalize 1 \
+--personalize 0 \
 --writers 178 67

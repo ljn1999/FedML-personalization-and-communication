@@ -47,6 +47,9 @@ class Group(FedAvgAPI):
             # train each client
             for client in sampled_client_list:
                 w_local_list = client.train(global_round_idx, group_round_idx, w_group, personalize)
+                self.client_dict[client.client_idx] = copy.deepcopy(client)
+                '''m = client.local_test(False)
+                print("in group:", client.client_idx, m['test_correct'], m['test_total'])'''
                 for global_epoch, w in w_local_list:
                     if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []
                     w_locals_dict[global_epoch].append((client.get_sample_number(), w))
@@ -59,4 +62,7 @@ class Group(FedAvgAPI):
             # update the group weight
             w_group = w_group_list[-1][1]
             self.weights = copy.deepcopy(w_group)
+        '''for client in [self.client_dict[client_idx] for client_idx in sampled_client_indexes]:
+            m = client.local_test(False)
+            print("end!!!", client.client_idx, m['test_correct'], m['test_total'])'''
         return w_group_list
