@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import string
 import sys
 
 import numpy as np
@@ -27,6 +28,7 @@ if __name__ == "__main__":
     parser.add_argument('--group_comm_round', type=int, default=10,
                         help='the number of group communications within a global communication')
     parser.add_argument('--personalize', type=int, default=0)
+    parser.add_argument('--writers', type=int, nargs="+", default=[])
     args = parser.parse_args()
     logger.info(args)
     device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")
@@ -61,9 +63,11 @@ if __name__ == "__main__":
         model_trainer = MyModelTrainerNWP(model)
     else: # default model trainer is for classification problem
         model_trainer = MyModelTrainerCLS(model)
+    
     if args.personalize == 1:
         personalize = True
     else:
         personalize = False
+
     trainer = Trainer(dataset, device, args, model_trainer, personalize)
     trainer.train(personalize)

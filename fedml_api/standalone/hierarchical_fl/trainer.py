@@ -106,7 +106,7 @@ class Trainer(FedAvgAPI):
                 w_global = self._aggregate(w_groups)
 
                 # evaluate performance
-                if (global_epoch+1) % 100 == 0 or \
+                if (global_epoch+1) % self.args.epochs == 0 or \
                     global_epoch == self.args.global_comm_round*self.args.group_comm_round*self.args.epochs-1:
                     if not personalize:
                         self.model_trainer.model.load_state_dict(w_global)
