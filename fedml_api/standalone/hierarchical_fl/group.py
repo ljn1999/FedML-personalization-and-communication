@@ -56,7 +56,7 @@ class Group(FedAvgAPI):
                 w_local_list = self.client_dict[sampled_client_idx].send_weight()
                 for global_epoch, w in w_local_list:
                         if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []
-                        w_locals_dict[global_epoch].append((client.client_idx, client.get_sample_number(), w))
+                        w_locals_dict[global_epoch].append((client.get_sample_number(), w))
 
             # aggregate local weights
             for global_epoch in sorted(w_locals_dict.keys()):
