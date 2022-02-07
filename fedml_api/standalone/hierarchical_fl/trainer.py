@@ -50,25 +50,6 @@ class Trainer(FedAvgAPI):
                 group_to_client_indexes[group_idx] = []
             group_to_client_indexes[group_idx].append(client_idx)
         return group_to_client_indexes
-    
-    # Dynamic sampling test
-    def client_sampling_dynamic(self, global_round_idx, client_num_in_total, client_num_per_round):
-        # For global sampling, we ignore the argument client_num_per_round passed in by the user
-        logging.info("ENTERING DYNAMIC SAMPLING")
-        sampled_client_indexes = super()._client_sampling(global_round_idx, 20, 20)
-        group_to_client_indexes = {}
-        for client_idx in sampled_client_indexes:
-            group_idx = self.group_indexes[client_idx]
-            if not group_idx in group_to_client_indexes:
-                group_to_client_indexes[group_idx] = []
-            group_to_client_indexes[group_idx].append(client_idx)
-        # Apply dynamic sampling to each group
-        for group_idx, client_indexes in group_to_client_indexes.items():
-            num_clients = math.ceil(pow(0.9, global_round_idx) * len(client_indexes))
-            np.random.seed(global_round_idx)  # make sure for each comparison, we are selecting the same clients each round
-            group_to_client_indexes[group_idx] = np.random.choice(client_indexes, num_clients, replace=False)
-        logging.info("SANITY DYNAMIC SAMPLING: client_indexes of each group = {}".format(group_to_client_indexes))
-        return group_to_client_indexes
 
     def train(self):
         w_global = self.model_trainer.model.state_dict()
@@ -84,7 +65,7 @@ class Trainer(FedAvgAPI):
             for group_idx in sorted(group_to_client_indexes.keys()):
                 sampled_client_indexes = group_to_client_indexes[group_idx]
                 group = self.group_dict[group_idx]
-                w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes)
+                w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes, self.args.sample_base_num)
                 for global_epoch, w in w_group_list:
                     if not global_epoch in w_groups_dict: w_groups_dict[global_epoch] = []
                     w_groups_dict[global_epoch].append((group.get_sample_number(sampled_client_indexes), w))

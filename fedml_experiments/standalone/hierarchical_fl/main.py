@@ -27,6 +27,8 @@ if __name__ == "__main__":
     parser.add_argument('--global_comm_round', type=int, default=10, help='the number of global communications')
     parser.add_argument('--group_comm_round', type=int, default=10,
                         help='the number of group communications within a global communication')
+    parser.add_argument('--sample_base_num', type=float, default=0.9,
+                        help='the base number for dynamic sampling; float in range [0, 1]; if 0: no samples in each edge aggregation; if 1: all sampled')
     args = parser.parse_args()
     logger.info(args)
     # device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")

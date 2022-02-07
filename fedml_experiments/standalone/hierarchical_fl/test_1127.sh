@@ -30,6 +30,8 @@ GROUP_COMM_ROUND=5
 
 EPOCH=10
 
+SAMPLE_BASE_NUM=0.9
+
 python ./main.py \
 --gpu $GPU \
 --client_num_in_total $CLIENT_NUM \
@@ -45,4 +47,5 @@ python ./main.py \
 --group_num $GROUP_NUM \
 --global_comm_round $GLOBAL_COMM_ROUND \
 --group_comm_round $GROUP_COMM_ROUND \
---epochs $EPOCH
+--epochs $EPOCH \
+--sample_base_num $SAMPLE_BASE_NUM

@@ -22,7 +22,7 @@ class Group(FedAvgAPI):
             self.group_sample_number += self.train_data_local_num_dict[client_idx]
         return self.group_sample_number
 
-    def train(self, global_round_idx, w, client_indexes):
+    def train(self, global_round_idx, w, client_indexes, sample_base_num):
         client_list = [self.client_dict[client_idx] for client_idx in client_indexes]
         w_group = w
         w_group_list = []
@@ -50,8 +50,10 @@ class Group(FedAvgAPI):
             for client_idx, probability in client_to_probability_dict.items():
                 client_idx_list.append(client_idx)
                 probability_list.append(probability)
-            num_clients = math.ceil(pow(0.9, global_round_idx) * len(client_list))
+            # num_clients = math.ceil(pow(0.9, global_round_idx) * len(client_list))
+            num_clients = math.ceil(pow(sample_base_num, global_round_idx) * len(client_list))
             sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, p=probability_list)
+            logging.info("number of sampled clients for edge aggregate: {}".format(len(sampled_client_indexes)))
             for sampled_client_idx in sampled_client_indexes:
                 w_local_list = self.client_dict[sampled_client_idx].send_weight()
                 for global_epoch, w in w_local_list:
