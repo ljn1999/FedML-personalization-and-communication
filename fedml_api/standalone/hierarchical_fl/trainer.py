@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 import copy
+import torch
 
 from fedml_api.standalone.hierarchical_fl.group import Group
 from fedml_api.standalone.hierarchical_fl.client import Client
@@ -130,7 +131,12 @@ class Trainer(FedAvgAPI):
                             group = self.group_dict[group_idx]
                             sampled_client_list = [group.client_dict[client_idx] for client_idx in sampled_client_indexes]
                             for client in sampled_client_list:
-                                m = client.local_test(False)
+                                model_path = "./client_"+str(client.client_idx)+".pt"
+                                torch.save(client.model_trainer.model.state_dict(), model_path)
+                                #m = client.local_test(False)
                                 self.client_list[client.client_idx] = copy.deepcopy(client)
                                 #self.client_list[client.client_idx].model_trainer.model.load_state_dict(client.model_trainer.model.state_dict())
+                    else:
+                        model_path = "./global.pt"
+                        torch.save(w_global, model_path)
                     self._local_test_on_all_clients(global_epoch)
