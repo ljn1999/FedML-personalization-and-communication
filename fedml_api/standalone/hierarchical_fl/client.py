@@ -41,7 +41,10 @@ class Client(Client):
                 # quantize weight
                 for layer, weight in w_orig.items():
                     quantizer = Quantizer(weight)
-                    w_quantized[layer] = quantizer.quantize()
+                    # w_quantized[layer] = quantizer.quantize()
+                    # hardcode s = 256 for testing for now
+                    w_norm, w_L = quantizer.quantize2(256)
+                    w_quantized[layer] = torch.mul(w_L, w_norm)
                 w_list.append((global_epoch, w_quantized))
 
         
