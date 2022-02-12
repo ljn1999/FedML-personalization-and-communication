@@ -62,7 +62,7 @@ class Quantizer:
         for i in range(0, self.L.size(dim=0)):
             # p: [probability to floor, probability to ceil]
             p = torch.tensor([self.diff[i].item(), (1 - self.diff[i].item())])
-            floor_ceil = torch.tensor([self.L[i].item(), (self.L[i].item() + 1)])
+            floor_ceil = torch.tensor([(self.L[i].item() + 1), self.L[i].item()])
             choice = p.multinomial(num_samples=1, replacement=True)
             self.L[i] = floor_ceil[choice]
         self.m = nn.Sequential(nn.Unflatten(0, self.shape))
