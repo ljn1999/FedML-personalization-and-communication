@@ -1,6 +1,7 @@
 import torch
 from torch import linalg as LA
 import torch.nn as nn
+import numpy as np
 
 class Quantizer:
     def __init__(self, tensor, num_bits=8, symmetric=True):
@@ -51,25 +52,43 @@ class Quantizer:
         self.signs = torch.sign(self.tensor)
         # L = floor(|vi| * s / norm)
         self.L = torch.mul(torch.abs(self.tensor), (s / self.sq_norm))
-        self.L = torch.floor(self.L)
-        # trial: flatten all tensors to 1D then revert back
-        self.shape = self.tensor.shape
-        # print("!!!!original shape:") 
-        # print(self.shape)
-        self.diff = torch.flatten(torch.mul(torch.abs(self.tensor), (s / self.sq_norm)) - self.L)
-        self.L = torch.flatten(self.L)
-        self.diff = torch.flatten(self.diff)
-        for i in range(0, self.L.size(dim=0)):
-            # p: [probability to floor, probability to ceil]
-            p = torch.tensor([self.diff[i].item(), (1 - self.diff[i].item())])
-            floor_ceil = torch.tensor([(self.L[i].item() + 1), self.L[i].item()])
-            choice = p.multinomial(num_samples=1, replacement=True)
-            self.L[i] = floor_ceil[choice]
-        self.m = nn.Sequential(nn.Unflatten(0, self.shape))
-        self.L = self.m(self.L)
-        # print("!!!!!!!!!!!later shape:") 
-        # print(self.L.shape)
-        # return norm and signed L: O(1 + n)
+        self.L = torch.round(self.L)
+        ############# trial with probability: too slow ########
+        # self.L = torch.floor(self.L)
+        # # trial: flatten all tensors to 1D then revert back
+        # self.shape = self.tensor.shape
+        # # print("!!!!original shape:") 
+        # # print(self.shape)
+        # self.diff = torch.flatten(torch.mul(torch.abs(self.tensor), (s / self.sq_norm)) - self.L)
+        # self.L = torch.flatten(self.L)
+        # floor = self.L.numpy()
+        # ceil = floor + 1
+        # value = np.stack((floor, ceil), axis=-1)
+        # diff_f = (torch.flatten(self.diff)).numpy()
+        # diff_c = 1 - diff_f
+        # p = np.stack((diff_c, diff_f), axis=-1)
+        # for i in range(p.shape[0]):
+        #     # print(value[i])
+        #     # print(p[i])
+        #     self.L[i] = (np.random.choice(value[i], size=1, p=p[i]).astype(int)).item()
+            # print(self.L[i])
+        # for i in range(0, self.L.size(dim=0)):
+        # #     # p: [probability to floor, probability to ceil]
+        #     # print("loop start:", i)
+        #     p = [self.diff[i].item(), (1 - self.diff[i].item())]
+        #     floor_ceil = [(self.L[i].item() + 1), self.L[i].item()]
+        # #     choice = p.multinomial(num_samples=1, replacement=True)
+        #     choice = np.random.choice(floor_ceil, size=1, p=p)
+        #     # self.L[i] = floor_ceil[choice]
+        #     self.L[i] = choice[0]
+        #     # print("loop finish:", i)
+        # self.m = nn.Sequential(nn.Unflatten(0, self.shape))
+        # self.L = self.m(self.L)
+        # # print("!!!!!!!!!!!later shape:") 
+        # # print(self.L.shape)
+        # # return norm and signed L: O(1 + n)
         self.L = torch.mul(self.L, self.signs)
+        # add parameter to decide which integer type later
+        self.L = self.L.int()
         return self.sq_norm, self.L
 
