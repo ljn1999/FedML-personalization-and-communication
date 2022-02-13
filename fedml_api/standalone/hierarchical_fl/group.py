@@ -1,6 +1,8 @@
 import logging
 import math
 import numpy as np
+import torch
+from collections import OrderedDict
 from fedml_api.standalone.hierarchical_fl.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
@@ -52,10 +54,17 @@ class Group(FedAvgAPI):
                 probability_list.append(probability)
             # num_clients = math.ceil(pow(0.9, global_round_idx) * len(client_list))
             num_clients = math.ceil(pow(sample_base_num, global_round_idx) * len(client_list))
-            sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, p=probability_list)
+            sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, replace=False, p=probability_list)
             logging.info("number of sampled clients for edge aggregate: {}".format(len(sampled_client_indexes)))
+            print(sampled_client_indexes)
             for sampled_client_idx in sampled_client_indexes:
                 w_local_list = self.client_dict[sampled_client_idx].send_weight()
+                for i in range(len(w_local_list)):
+                    quantized_w_list = OrderedDict()
+                    for layer, w in w_local_list[i][1].items():
+                        quantized_w_list[layer] = torch.mul(w[0], w[1])
+                    w_local_list[i] = (w_local_list[i][0], quantized_w_list)
+                    # print(w_local_list)
                 for global_epoch, w in w_local_list:
                         if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []
                         w_locals_dict[global_epoch].append((client.get_sample_number(), w))
