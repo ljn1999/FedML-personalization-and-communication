@@ -56,7 +56,6 @@ class Group(FedAvgAPI):
             num_clients = math.ceil(pow(sample_base_num, global_round_idx) * len(client_list))
             sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, replace=False, p=probability_list)
             logging.info("number of sampled clients for edge aggregate: {}".format(len(sampled_client_indexes)))
-            print(sampled_client_indexes)
             for sampled_client_idx in sampled_client_indexes:
                 w_local_list = self.client_dict[sampled_client_idx].send_weight()
                 for i in range(len(w_local_list)):
@@ -72,8 +71,25 @@ class Group(FedAvgAPI):
             # aggregate local weights
             for global_epoch in sorted(w_locals_dict.keys()):
                 w_locals = w_locals_dict[global_epoch]
-                w_group_list.append((global_epoch, self._aggregate(w_locals)))
+                w_group_list.append((global_epoch, self._aggregate(w_group, w_locals)))
 
             # update the group weight
             w_group = w_group_list[-1][1]
         return w_group_list
+
+    def _aggregate(self, w_group, w_locals):
+        training_num = 0
+        for idx in range(len(w_locals)):
+            (sample_num, averaged_params) = w_locals[idx]
+            training_num += sample_num
+
+        (sample_num, averaged_params) = w_locals[0]
+        for k in averaged_params.keys():
+            for i in range(0, len(w_locals)):
+                local_sample_number, local_model_params = w_locals[i]
+                w = local_sample_number / training_num
+                if i == 0:
+                    averaged_params[k] = w_group[k] + local_model_params[k] * w
+                else:
+                    averaged_params[k] += local_model_params[k] * w
+        return averaged_params

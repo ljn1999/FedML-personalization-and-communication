@@ -10,6 +10,7 @@ from fedml_api.standalone.hierarchical_fl.quantizer import Quantizer
 class Client(Client):
 
     def train(self, global_round_idx, group_round_idx, w):
+        w_group = w
         model = self.model_trainer.model
         model.load_state_dict(w)
         model.to(self.device)
@@ -40,7 +41,7 @@ class Client(Client):
                 w_quantized = copy.deepcopy(self.model_trainer.model.state_dict())
                 # quantize weight
                 for layer, weight in w_orig.items():
-                    quantizer = Quantizer(weight)
+                    quantizer = Quantizer(torch.sub(weight, w_group[layer]))
                     # w_quantized[layer] = quantizer.quantize()
                     # hardcode s = 256 for testing for now
                     w_norm, w_L = quantizer.quantize2(256)
