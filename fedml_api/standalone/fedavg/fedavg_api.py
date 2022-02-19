@@ -10,7 +10,7 @@ from fedml_api.standalone.fedavg.client import Client
 
 
 class FedAvgAPI(object):
-    def __init__(self, dataset, device, args, model_trainer, personalize=False):
+    def __init__(self, dataset, device, args, model_trainer, personalize=False, communication=False):
         self.device = device
         self.args = args
         [train_data_num, test_data_num, train_data_global, test_data_global,

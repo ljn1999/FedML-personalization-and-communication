@@ -28,6 +28,7 @@ if __name__ == "__main__":
     parser.add_argument('--group_comm_round', type=int, default=10,
                         help='the number of group communications within a global communication')
     parser.add_argument('--personalize', type=int, default=0)
+    parser.add_argument('--communication', type=int, default=0)
     parser.add_argument('--writers', type=int, nargs="+", default=[])
     args = parser.parse_args()
     logger.info(args)
@@ -69,5 +70,10 @@ if __name__ == "__main__":
     else:
         personalize = False
 
-    trainer = Trainer(dataset, device, args, model_trainer, personalize)
-    trainer.train(personalize)
+    if args.communication == 1:
+        communication = True
+    else:
+        communication = False
+
+    trainer = Trainer(dataset, device, args, model_trainer, personalize, communication)
+    trainer.train(personalize, communication)

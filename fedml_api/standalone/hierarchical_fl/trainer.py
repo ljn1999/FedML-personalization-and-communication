@@ -57,7 +57,7 @@ class Trainer(FedAvgAPI):
         logging.info("############setup_clients (END)#############")
 
     def client_sampling(self, global_round_idx, client_num_in_total, client_num_per_round):
-        sampled_client_indexes = super()._client_sampling(global_round_idx, client_num_in_total, client_num_per_round)
+        sampled_client_indexes = super()._client_sampling(global_round_idx, 6, 6)
         group_to_client_indexes = {}
         for client_idx in sampled_client_indexes:
             group_idx = self.group_indexes[client_idx]
@@ -67,11 +67,15 @@ class Trainer(FedAvgAPI):
         logging.info("client_indexes of each group = {}".format(group_to_client_indexes))
         return group_to_client_indexes
 
-    def train(self, personalize=False):
+    def train(self, personalize=False, communication=False):
         w_global = self.model_trainer.model.state_dict()
+        if communication:
+            group_to_client_indexes = self.client_sampling(0, self.args.client_num_in_total,
+                                                  self.args.client_num_per_round)
         for global_round_idx in range(self.args.global_comm_round):
             logging.info("################Global Communication Round : {}".format(global_round_idx))
-            group_to_client_indexes = self.client_sampling(global_round_idx, self.args.client_num_in_total,
+            if communication is False:
+                group_to_client_indexes = self.client_sampling(global_round_idx, self.args.client_num_in_total,
                                                   self.args.client_num_per_round)
 
             # train each group
@@ -86,7 +90,7 @@ class Trainer(FedAvgAPI):
                 ##################################
 
                 group = self.group_dict[group_idx]
-                w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes, personalize)
+                w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes, personalize, communication)
                 self.group_dict[group_idx] = copy.deepcopy(group)
                 for global_epoch, w in w_group_list:
                     if not global_epoch in w_groups_dict: w_groups_dict[global_epoch] = []

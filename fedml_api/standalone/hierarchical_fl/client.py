@@ -1,12 +1,16 @@
 import copy
 import torch
+import numpy
 from torch import nn
+from numpy import linalg
 
 from fedml_api.standalone.fedavg.client import Client
+from fedml_api.standalone.hierarchical_fl.quantizer import Quantizer
 
 class Client(Client):
 
-    def train(self, global_round_idx, group_round_idx, w, personalize=False):
+    def train(self, global_round_idx, group_round_idx, w, personalize=False, communication=False):
+        w_group = copy.deepcopy(w)
         model = self.model_trainer.model
         if personalize:
             '''if group_round_idx == 0 and global_round_idx == 0:
@@ -36,6 +40,7 @@ class Client(Client):
                                               weight_decay=self.args.wd, amsgrad=True)
 
         w_list = []
+        accum_gradient = 0
         for epoch in range(self.args.epochs):
             '''if epoch == 0:
                train_local_metrics = self.local_test(False)
@@ -46,12 +51,37 @@ class Client(Client):
                 log_probs = self.model_trainer.model(x)
                 loss = criterion(log_probs, labels)
                 loss.backward()
+                if communication:
+                    for param in self.model_trainer.model.parameters():
+                        accum_gradient += linalg.norm(param.grad)
                 optimizer.step()
             global_epoch = global_round_idx*self.args.group_comm_round*self.args.epochs + \
                             group_round_idx*self.args.epochs + epoch
             if global_epoch % self.args.frequency_of_the_test == 0 or epoch == self.args.epochs-1:
-                w_list.append((global_epoch, copy.deepcopy(self.model_trainer.model.state_dict())))
+                if communication:
+                    w_orig = copy.deepcopy(self.model_trainer.model.state_dict())
+                    w_quantized = copy.deepcopy(self.model_trainer.model.state_dict())
+                    # quantize weight
+                    for layer, weight in w_orig.items():
+                        quantizer = Quantizer(torch.sub(weight, w_group[layer]))
+                        # hardcode s = 256 for testing for now
+                        w_norm, w_L = quantizer.quantize(256)
+                        w_quantized[layer] = (w_L, w_norm / 256)
+                    w_list.append((global_epoch, w_quantized))
+                else:
+                    w_list.append((global_epoch, copy.deepcopy(self.model_trainer.model.state_dict())))
             self.weights = copy.deepcopy(self.model_trainer.model.state_dict())
         '''train_local_metrics = self.local_test(False)
         print("client idx:", self.client_idx, "after args.epoch training acc:", train_local_metrics['test_correct']/train_local_metrics['test_total'])'''
-        return w_list
+        
+        self.client_weight_list = w_list
+        if communication:
+            weight_difference = 0
+            for layer, weight in self.weights.items():
+                weight_difference += linalg.norm(torch.sub(weight, w_group[layer]))
+            return accum_gradient, weight_difference
+        else:
+            return w_list
+    
+    def send_weight(self):
+        return self.client_weight_list

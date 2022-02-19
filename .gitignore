@@ -58,3 +58,5 @@ data/fednlp/*
 *.npz
 
 *.jpg
+*.pt
+*.bz2
