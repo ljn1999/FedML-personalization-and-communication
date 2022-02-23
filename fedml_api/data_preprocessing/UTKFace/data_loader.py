@@ -172,7 +172,7 @@ def get_dataloader(data_dir, train_bs, test_bs, train_groups_extract, test_group
         image_data = Image.open(os.path.join(test_path, record[FILENAME]))
         transformed_image_data = transform(image_data) # resize and make it gray
         test_x = np.append(test_x, transformed_image_data, axis=0) # data
-        test_y = np.append(test_y, record[AGE]) # labels
+        test_y = np.append(test_y, record[GENDER]) # labels
     
     # dataloader
     train_ds = data.TensorDataset(torch.tensor(train_x), torch.tensor(train_y, dtype=torch.long))
