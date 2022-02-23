@@ -1,15 +1,15 @@
 #!/bin/bash
 GPU=0
 
-CLIENT_NUM=3 # useless for femnist
+CLIENT_NUM=3 # useless for utkface
 
 WORKER_NUM=6
 
-BATCH_SIZE=128 # useless for femnist
+BATCH_SIZE=128 # useless for utkface
 
-DATASET='femnist'
+DATASET='utkface'
 
-DATA_PATH='./../../../data/FederatedEMNIST/datasets'
+DATA_PATH='./../../../data/UTKFace/UTKFace'
 
 MODEL='cnn'
 
@@ -46,4 +46,3 @@ python ./main.py \
 --group_comm_round $GROUP_COMM_ROUND \
 --epochs $EPOCH \
 --personalize 1 \
---writers 178 67
