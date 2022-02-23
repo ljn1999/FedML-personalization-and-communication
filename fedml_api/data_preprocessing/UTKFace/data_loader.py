@@ -105,10 +105,7 @@ def load_partition_data_utkface(dataset, data_dir, batch_size=DEFAULT_BATCH_SIZE
 
     
     logging.info("class_num = %d" % class_num)
-    train_client_num = len(train_groups)
-    
-    print(train_client_num, train_data_num, test_data_num, train_data_global, test_data_global, \
-           data_local_num_dict, train_data_local_dict, test_data_local_dict, class_num)
+    train_client_num = len(train_groups)*N
     
     return train_client_num, train_data_num, test_data_num, train_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, test_data_local_dict, class_num
