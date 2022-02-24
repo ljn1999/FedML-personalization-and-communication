@@ -28,7 +28,14 @@ class Client(Client):
         '''train_local_metrics = self.local_test(False)
         print("client idx:", self.client_idx, "w_client acc:", train_local_metrics['test_correct']/train_local_metrics['test_total'])'''
 
-        criterion = nn.CrossEntropyLoss().to(self.device)
+        #criterion = nn.CrossEntropyLoss().to(self.device)
+        #print("model name:", model.__class__.__name__)
+        
+        if model.__class__.__name__ == "CNN_DropOut_Binary":
+            criterion = nn.BCEWithLogitsLoss().to(self.device)
+        else:
+            criterion = nn.CrossEntropyLoss().to(self.device)
+
         if self.args.client_optimizer == "sgd":
             optimizer = torch.optim.SGD(self.model_trainer.model.parameters(), lr=self.args.lr)
         else:
@@ -44,7 +51,10 @@ class Client(Client):
                 x, labels = x.to(self.device), labels.to(self.device)
                 self.model_trainer.model.zero_grad()
                 log_probs = self.model_trainer.model(x)
-                loss = criterion(log_probs, labels)
+                if model.__class__.__name__ == "CNN_DropOut_Binary":
+                    loss = criterion(log_probs, labels.unsqueeze(1).type(torch.FloatTensor).cuda())
+                else:
+                    loss = criterion(log_probs, labels)
                 loss.backward()
                 optimizer.step()
             global_epoch = global_round_idx*self.args.group_comm_round*self.args.epochs + \
