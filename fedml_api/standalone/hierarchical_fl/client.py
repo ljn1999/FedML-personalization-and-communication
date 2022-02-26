@@ -62,6 +62,12 @@ class Client(Client):
             if global_epoch % self.args.frequency_of_the_test == 0 or epoch == self.args.epochs-1:
                 w_list.append((global_epoch, copy.deepcopy(self.model_trainer.model.state_dict())))
             self.weights = copy.deepcopy(self.model_trainer.model.state_dict())
-        '''train_local_metrics = self.local_test(False)
-        print("client idx:", self.client_idx, "after args.epoch training acc:", train_local_metrics['test_correct']/train_local_metrics['test_total'])'''
+        # train acc
+        train_local_metrics = self.local_test(False)
+        print("client idx:", self.client_idx, "after", args.epoch, "epoch training acc:", train_local_metrics['test_correct'], train_local_metrics['test_total'])
+        print("client idx:", self.client_idx, "after", args.epoch, "epoch training loss:", train_local_metrics['test_loss'], train_local_metrics['test_total'])
+        # test acc
+        test_local_metrics = self.local_test(True)
+        print("client idx:", self.client_idx, "after", args.epoch, "epoch test acc:", test_local_metrics['test_correct'], test_local_metrics['test_total'])
+        print("client idx:", self.client_idx, "after", args.epoch, "epoch test loss:", test_local_metrics['test_loss'], test_local_metrics['test_total'])
         return w_list
