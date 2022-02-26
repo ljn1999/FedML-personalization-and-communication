@@ -22,9 +22,10 @@ from fedml_api.data_preprocessing.ImageNet.data_loader import load_partition_dat
 from fedml_api.data_preprocessing.Landmarks.data_loader import load_partition_data_landmarks
 from fedml_api.model.cv.mobilenet import mobilenet
 from fedml_api.model.cv.resnet import resnet56
-from fedml_api.model.cv.cnn import CNN_DropOut
+from fedml_api.model.cv.cnn import CNN_DropOut, CNN_DropOut_Binary
 from fedml_api.data_preprocessing.FederatedEMNIST.data_loader import load_partition_data_federated_emnist
 from fedml_api.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow
+from fedml_api.data_preprocessing.UTKFace.data_loader import load_partition_data_utkface
 
 from fedml_api.data_preprocessing.MNIST.data_loader import load_partition_data_mnist
 from fedml_api.model.linear.lr import LogisticRegression
@@ -112,6 +113,13 @@ def load_data(args, dataset_name):
         For shallow NN or linear models, 
         we uniformly sample a fraction of clients each round (as the original FedAvg paper)
         """
+        args.client_num_in_total = client_num
+    
+    elif dataset_name == "utkface":
+        logging.info("load_data. dataset_name = %s" % dataset_name)
+        client_num, train_data_num, test_data_num, train_data_global, test_data_global, \
+        train_data_local_num_dict, train_data_local_dict, test_data_local_dict, \
+        class_num = load_partition_data_utkface(args.dataset, args.data_dir)
         args.client_num_in_total = client_num
 
     elif dataset_name == "femnist":
@@ -244,6 +252,9 @@ def create_model(args, model_name, output_dim):
     elif model_name == "cnn" and args.dataset == "femnist":
         logging.info("CNN + FederatedEMNIST")
         model = CNN_DropOut(False)
+    elif model_name == "cnn" and args.dataset == "utkface":
+        logging.info("CNN + UTKFace")
+        model = CNN_DropOut_Binary(False)
     elif model_name == "resnet18_gn" and args.dataset == "fed_cifar100":
         logging.info("ResNet18_GN + Federated_CIFAR100")
         model = resnet18()
