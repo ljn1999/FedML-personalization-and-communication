@@ -83,12 +83,12 @@ class Client(Client):
             self.weights = copy.deepcopy(self.model_trainer.model.state_dict())
         # train acc
         train_local_metrics = self.local_test(False)
-        print("client idx:", self.client_idx, "after", epoch, "epoch training acc:", train_local_metrics['test_correct'], train_local_metrics['test_total'])
-        print("client idx:", self.client_idx, "after", epoch, "epoch training loss:", train_local_metrics['test_loss'], train_local_metrics['test_total'])
+        #print("client idx:", self.client_idx, "epoch training acc:", train_local_metrics['test_correct'], train_local_metrics['test_total'])
+        #print("client idx:", self.client_idx, "training loss:", train_local_metrics['test_loss'], train_local_metrics['test_total'])
         # test acc
         test_local_metrics = self.local_test(True)
-        print("client idx:", self.client_idx, "after", epoch, "epoch test acc:", test_local_metrics['test_correct'], test_local_metrics['test_total'])
-        print("client idx:", self.client_idx, "after", epoch, "epoch test loss:", test_local_metrics['test_loss'], test_local_metrics['test_total'])
+        #print("client idx:", self.client_idx, "test acc:", test_local_metrics['test_correct'], test_local_metrics['test_total'])
+        #print("client idx:", self.client_idx, "test loss:", test_local_metrics['test_loss'], test_local_metrics['test_total'])
         
         self.client_weight_list = w_list
         if communication:

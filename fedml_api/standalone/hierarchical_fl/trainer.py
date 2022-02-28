@@ -12,8 +12,10 @@ class Trainer(FedAvgAPI):
     def _setup_clients(self, train_data_local_num_dict, train_data_local_dict, test_data_local_dict):
         logging.info("############setup_clients (START)#############")
         if self.args.group_method == 'random':
-            #self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
-            self.group_indexes = [0,0,0,1,1,1]
+            if self.args.writers == []:
+                self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
+            else:
+                self.group_indexes = [0,0,0,1,1,1]
             group_to_client_indexes = {}
             for client_idx, group_idx in enumerate(self.group_indexes):
                 if not group_idx in group_to_client_indexes:
@@ -35,8 +37,10 @@ class Trainer(FedAvgAPI):
     def _setup_clients_personalize(self, train_data_local_num_dict, train_data_local_dict, test_data_local_dict):
         logging.info("############setup_clients (START)#############")
         if self.args.group_method == 'random':
-            #self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
-            self.group_indexes = [0, 0, 0, 1, 1, 1]
+            if self.args.writers == []:
+                self.group_indexes = np.random.randint(0, self.args.group_num, self.args.client_num_in_total)
+            else:
+                self.group_indexes = [0, 0, 0, 1, 1, 1]
             group_to_client_indexes = {}
             for client_idx, group_idx in enumerate(self.group_indexes):
                 if not group_idx in group_to_client_indexes:
@@ -57,7 +61,7 @@ class Trainer(FedAvgAPI):
         logging.info("############setup_clients (END)#############")
 
     def client_sampling(self, global_round_idx, client_num_in_total, client_num_per_round):
-        sampled_client_indexes = super()._client_sampling(global_round_idx, 6, 6)
+        sampled_client_indexes = super()._client_sampling(global_round_idx, client_num_in_total, client_num_per_round)
         group_to_client_indexes = {}
         for client_idx in sampled_client_indexes:
             group_idx = self.group_indexes[client_idx]
@@ -123,11 +127,10 @@ class Trainer(FedAvgAPI):
                     if not personalize:
                         self.model_trainer.model.load_state_dict(w_global)
                     #############################################
-                    else:
+                    elif self.args.writers == []:
                         for client_idx in range(self.args.client_num_in_total):
                             if self.client_list[client_idx].sampled == False:
-                                pass
-                                #self.client_list[client_idx].model_trainer.model.load_state_dict(w_global)
+                                self.client_list[client_idx].model_trainer.model.load_state_dict(w_global)
                     #############################################
                     if personalize:
                         for group_idx in sorted(group_to_client_indexes.keys()):
