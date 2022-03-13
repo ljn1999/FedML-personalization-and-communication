@@ -1,9 +1,20 @@
 #!/bin/bash
+#SBATCH --account=def-ssanner
+#SBATCH --mail-user=nini.li@mail.utoronto.ca
+#SBATCH --mail-type=BEGIN
+#SBATCH --mail-type=END
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=REQUEUE
+#SBATCH --mail-type=ALL
+#SBATCH --gres=gpu:v100l:1
+#SBATCH --mem=32g
+#SBATCH --time=12:00:0
+
 GPU=0
 
 CLIENT_NUM=3 # useless for femnist
 
-WORKER_NUM=10
+WORKER_NUM=30
 
 BATCH_SIZE=128 # useless for femnist
 
@@ -21,13 +32,13 @@ OPT=adam
 
 GROUP_METHOD='random'
 
-GROUP_NUM=2
+GROUP_NUM=3
 
-GLOBAL_COMM_ROUND=2
+GLOBAL_COMM_ROUND=4
 
-GROUP_COMM_ROUND=3
+GROUP_COMM_ROUND=5
 
-EPOCH=10
+EPOCH=5
 
 python ./main.py \
 --gpu $GPU \
@@ -46,4 +57,4 @@ python ./main.py \
 --group_comm_round $GROUP_COMM_ROUND \
 --epochs $EPOCH \
 --personalize 1 \
---communication 0
+--communication 1

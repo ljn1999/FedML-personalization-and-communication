@@ -63,7 +63,7 @@ class Client(Client):
                 loss.backward()
                 if communication:
                     for param in self.model_trainer.model.parameters():
-                        accum_gradient += linalg.norm(param.grad)
+                        accum_gradient += linalg.norm(param.grad.cpu())
                 optimizer.step()
             global_epoch = global_round_idx*self.args.group_comm_round*self.args.epochs + \
                             group_round_idx*self.args.epochs + epoch
@@ -73,7 +73,7 @@ class Client(Client):
                     w_quantized = copy.deepcopy(self.model_trainer.model.state_dict())
                     # quantize weight
                     for layer, weight in w_orig.items():
-                        quantizer = Quantizer(torch.sub(weight, w_group[layer]))
+                        quantizer = Quantizer(torch.sub(weight.cpu(), w_group[layer]))
                         # hardcode s = 256 for testing for now
                         w_norm, w_L = quantizer.quantize(256)
                         w_quantized[layer] = (w_L, w_norm / 256)
@@ -94,7 +94,7 @@ class Client(Client):
         if communication:
             weight_difference = 0
             for layer, weight in self.weights.items():
-                weight_difference += linalg.norm(torch.sub(weight, w_group[layer]))
+                weight_difference += linalg.norm(torch.sub(weight.cpu(), w_group[layer]))
             return accum_gradient, weight_difference
         else:
             return w_list

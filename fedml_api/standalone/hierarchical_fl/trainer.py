@@ -95,7 +95,7 @@ class Trainer(FedAvgAPI):
 
                 group = self.group_dict[group_idx]
                 w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes, personalize, communication)
-                self.group_dict[group_idx] = copy.deepcopy(group)
+                #self.group_dict[group_idx] = copy.deepcopy(group)
                 for global_epoch, w in w_group_list:
                     if not global_epoch in w_groups_dict: w_groups_dict[global_epoch] = []
                     w_groups_dict[global_epoch].append((group.get_sample_number(sampled_client_indexes), w))
@@ -138,9 +138,9 @@ class Trainer(FedAvgAPI):
                             group = self.group_dict[group_idx]
                             sampled_client_list = [group.client_dict[client_idx] for client_idx in sampled_client_indexes]
                             for client in sampled_client_list:
-                                model_path = "./client_"+str(client.client_idx)+".pt"
-                                torch.save(client.model_trainer.model.state_dict(), model_path)
-                                #m = client.local_test(False)
+                                #model_path = "./client_"+str(client.client_idx)+".pt"
+                                #torch.save(client.model_trainer.model.state_dict(), model_path)
+                                ###m = client.local_test(False)
                                 self.client_list[client.client_idx] = copy.deepcopy(client)
                                 #self.client_list[client.client_idx].model_trainer.model.load_state_dict(client.model_trainer.model.state_dict())
                     else:
