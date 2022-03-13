@@ -33,8 +33,7 @@ if __name__ == "__main__":
     parser.add_argument('--quantization_mode', type=str, default='8-bit')
     args = parser.parse_args()
     logger.info(args)
-    # device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")
-    device = torch.device("cpu")
+    device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")
     logger.info(device)
 
     wandb.init(
