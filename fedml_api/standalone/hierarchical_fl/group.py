@@ -27,7 +27,7 @@ class Group(FedAvgAPI):
             self.group_sample_number += self.train_data_local_num_dict[client_idx]
         return self.group_sample_number
 
-    def train(self, global_round_idx, w, sampled_client_indexes, personalize=False, communication=False):
+    def train(self, global_round_idx, w, sampled_client_indexes, personalize=False, communication=False, quantize_num=128):
         sampled_client_list = [self.client_dict[client_idx] for client_idx in sampled_client_indexes]
         
         # need to get the group model and only update the global layer
@@ -54,7 +54,7 @@ class Group(FedAvgAPI):
                 client_to_gradient_dict = {}
                 client_to_weight_diff_dict = {}
                 for client in client_list:
-                    client_accum_gradient, client_weight_diff = client.train(global_round_idx, group_round_idx, w_group, personalize, True)
+                    client_accum_gradient, client_weight_diff = client.train(global_round_idx, group_round_idx, w_group, personalize, True, quantize_num)
                     client_to_gradient_dict[client.client_idx] = client_accum_gradient
                     client_to_weight_diff_dict[client.client_idx] = client_weight_diff
 
@@ -90,7 +90,7 @@ class Group(FedAvgAPI):
                             w_locals_dict[global_epoch].append((client.get_sample_number(), w))
             else:
                 for client in sampled_client_list:
-                    w_local_list = client.train(global_round_idx, group_round_idx, w_group, personalize, False)
+                    w_local_list = client.train(global_round_idx, group_round_idx, w_group, personalize, False, quantize_num)
                     self.client_dict[client.client_idx] = copy.deepcopy(client)
                     '''m = client.local_test(False)
                     print("in group:", client.client_idx, m['test_correct'], m['test_total'])'''
