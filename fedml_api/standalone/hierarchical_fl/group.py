@@ -74,11 +74,11 @@ class Group(FedAvgAPI):
                 for client_idx, probability in client_to_probability_dict.items():
                     client_idx_list.append(client_idx)
                     probability_list.append(probability)
-                num_clients = round(pow(0.8, global_round_idx) * len(client_list))
-                sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, replace=False, p=probability_list)
-                logging.info("number of sampled clients for edge aggregate: {}".format(len(sampled_client_indexes)))
-                logging.info("Sampled clients indexes: " + str(sampled_client_indexes))
-                for sampled_client_idx in sampled_client_indexes:
+                num_clients = round(pow(0.8, group_round_idx) * len(client_list))
+                curr_sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, replace=False, p=probability_list)
+                logging.info("number of sampled clients for edge aggregate: {}".format(len(curr_sampled_client_indexes)))
+                logging.info("Sampled clients indexes: " + str(curr_sampled_client_indexes))
+                for sampled_client_idx in curr_sampled_client_indexes:
                     w_local_list = self.client_dict[sampled_client_idx].send_weight()
                     for i in range(len(w_local_list)):
                         quantized_w_list = OrderedDict()
