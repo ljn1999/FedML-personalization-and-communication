@@ -27,7 +27,7 @@ class Group(FedAvgAPI):
             self.group_sample_number += self.train_data_local_num_dict[client_idx]
         return self.group_sample_number
 
-    def train(self, global_round_idx, w, sampled_client_indexes, personalize=False, communication=False, quantize_num=128):
+    def train(self, global_round_idx, w, sampled_client_indexes, personalize=False, communication=False, quantize_num=128, pow_base=0.9):
         sampled_client_list = [self.client_dict[client_idx] for client_idx in sampled_client_indexes]
         
         # need to get the group model and only update the global layer
@@ -74,8 +74,9 @@ class Group(FedAvgAPI):
                 for client_idx, probability in client_to_probability_dict.items():
                     client_idx_list.append(client_idx)
                     probability_list.append(probability)
-                num_clients = round(pow(0.8, group_round_idx) * len(client_list))
-                curr_sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, replace=False, p=probability_list)
+                num_clients = round(pow(pow_base, group_round_idx) * len(client_list))
+                # curr_sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, replace=False, p=probability_list)
+                curr_sampled_client_indexes = np.random.choice(client_idx_list, size=num_clients, replace=False)
                 logging.info("number of sampled clients for edge aggregate: {}".format(len(curr_sampled_client_indexes)))
                 logging.info("Sampled clients indexes: " + str(curr_sampled_client_indexes))
                 for sampled_client_idx in curr_sampled_client_indexes:

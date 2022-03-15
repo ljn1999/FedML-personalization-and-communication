@@ -31,9 +31,11 @@ if __name__ == "__main__":
     parser.add_argument('--communication', type=int, default=0)
     parser.add_argument('--writers', type=int, nargs="+", default=[])
     parser.add_argument('--quantization_mode', type=str, default='8-bit')
+    parser.add_argument('--pow_base', type=float, default='0.9')
     args = parser.parse_args()
     logger.info(args)
-    device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
     logger.info(device)
 
     wandb.init(
@@ -87,4 +89,4 @@ if __name__ == "__main__":
         quantize_num = 1
 
     trainer = Trainer(dataset, device, args, model_trainer, personalize, communication)
-    trainer.train(personalize, communication, quantize_num)
+    trainer.train(personalize, communication, quantize_num, args.pow_base)
