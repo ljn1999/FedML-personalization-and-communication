@@ -61,7 +61,10 @@ class Group(FedAvgAPI):
                 for i in range(len(w_local_list)):
                     quantized_w_list = OrderedDict()
                     for layer, w in w_local_list[i][1].items():
-                        quantized_w_list[layer] = torch.mul(w[0], w[1])
+                        w_seed = w[2]
+                        torch.manual_seed(w_seed)
+                        dither = torch.rand(w[0].shape) - 0.5
+                        quantized_w_list[layer] = torch.mul((w[0] -dither), w[1])
                     w_local_list[i] = (w_local_list[i][0], quantized_w_list)
                     # print(w_local_list)
                 for global_epoch, w in w_local_list:
