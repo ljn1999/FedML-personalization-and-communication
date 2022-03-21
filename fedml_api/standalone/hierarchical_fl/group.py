@@ -64,7 +64,7 @@ class Group(FedAvgAPI):
                         w_seed = w[2]
                         torch.manual_seed(w_seed)
                         dither = torch.rand(w[0].shape) - 0.5
-                        quantized_w_list[layer] = torch.mul((w[0] -dither), w[1])
+                        quantized_w_list[layer] = torch.mul(w[0], w[1]) - dither
                     w_local_list[i] = (w_local_list[i][0], quantized_w_list)
                     # print(w_local_list)
                 for global_epoch, w in w_local_list:
