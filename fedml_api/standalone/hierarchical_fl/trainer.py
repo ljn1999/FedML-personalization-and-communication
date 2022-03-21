@@ -71,7 +71,7 @@ class Trainer(FedAvgAPI):
         logging.info("client_indexes of each group = {}".format(group_to_client_indexes))
         return group_to_client_indexes
 
-    def train(self, personalize=False, communication=False, quantize_num=128, pow_base=0.9):
+    def train(self, personalize=False, communication=False, quantize_num=128, pow_base=0.9, dithered=False):
         w_global = self.model_trainer.model.state_dict()
         if communication:
             group_to_client_indexes = self.client_sampling(0, self.args.client_num_in_total,
@@ -94,7 +94,7 @@ class Trainer(FedAvgAPI):
                 ##################################
 
                 group = self.group_dict[group_idx]
-                w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes, personalize, communication, quantize_num, pow_base)
+                w_group_list = group.train(global_round_idx, w_global, sampled_client_indexes, personalize, communication, quantize_num, pow_base, dithered)
                 #self.group_dict[group_idx] = copy.deepcopy(group)
                 for global_epoch, w in w_group_list:
                     if not global_epoch in w_groups_dict: w_groups_dict[global_epoch] = []

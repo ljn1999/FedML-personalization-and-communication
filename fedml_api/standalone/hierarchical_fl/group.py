@@ -27,7 +27,7 @@ class Group(FedAvgAPI):
             self.group_sample_number += self.train_data_local_num_dict[client_idx]
         return self.group_sample_number
 
-    def train(self, global_round_idx, w, sampled_client_indexes, personalize=False, communication=False, quantize_num=128, pow_base=0.9):
+    def train(self, global_round_idx, w, sampled_client_indexes, personalize=False, communication=False, quantize_num=128, pow_base=0.9, dithered=False):
         sampled_client_list = [self.client_dict[client_idx] for client_idx in sampled_client_indexes]
         
         # need to get the group model and only update the global layer
@@ -54,7 +54,7 @@ class Group(FedAvgAPI):
                 client_to_gradient_dict = {}
                 client_to_weight_diff_dict = {}
                 for client in client_list:
-                    client_accum_gradient, client_weight_diff = client.train(global_round_idx, group_round_idx, w_group, personalize, True, quantize_num)
+                    client_accum_gradient, client_weight_diff = client.train(global_round_idx, group_round_idx, w_group, personalize, True, quantize_num, dithered)
                     client_to_gradient_dict[client.client_idx] = client_accum_gradient
                     client_to_weight_diff_dict[client.client_idx] = client_weight_diff
 
@@ -83,8 +83,15 @@ class Group(FedAvgAPI):
                     w_local_list = self.client_dict[sampled_client_idx].send_weight()
                     for i in range(len(w_local_list)):
                         quantized_w_list = OrderedDict()
-                        for layer, w in w_local_list[i][1].items():
-                            quantized_w_list[layer] = torch.mul(w[0], w[1])
+                        if dithered:
+                            for layer, w in w_local_list[i][1].items():
+                                w_seed = w[2]
+                                torch.manual_seed(w_seed)
+                                dither = torch.rand(w[0].shape) - 0.5
+                                quantized_w_list[layer] = torch.mul(w[0], w[1]) - dither
+                        else:
+                            for layer, w in w_local_list[i][1].items():
+                                quantized_w_list[layer] = torch.mul(w[0], w[1])
                         w_local_list[i] = (w_local_list[i][0], quantized_w_list)
                     for global_epoch, w in w_local_list:
                             if not global_epoch in w_locals_dict: w_locals_dict[global_epoch] = []

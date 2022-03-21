@@ -9,7 +9,7 @@ from fedml_api.standalone.hierarchical_fl.quantizer import Quantizer
 
 class Client(Client):
 
-    def train(self, global_round_idx, group_round_idx, w, personalize=False, communication=False, quantize_num=128):
+    def train(self, global_round_idx, group_round_idx, w, personalize=False, communication=False, quantize_num=128, dithered=False):
         w_group = copy.deepcopy(w)
         model = self.model_trainer.model
         if personalize:
@@ -74,8 +74,12 @@ class Client(Client):
                     # quantize weight
                     for layer, weight in w_orig.items():
                         quantizer = Quantizer(torch.sub(weight.cpu(), w_group[layer]))
-                        w_norm, w_L = quantizer.quantize(quantize_num)
-                        w_quantized[layer] = (w_L, w_norm / quantize_num)
+                        if dithered:
+                            w_norm, w_L, w_seed = quantizer.quantize_dithered(quantize_num)
+                            w_quantized[layer] = (w_L, w_norm / quantize_num, w_seed)
+                        else:
+                            w_norm, w_L = quantizer.quantize(quantize_num)
+                            w_quantized[layer] = (w_L, w_norm / quantize_num)
                     w_list.append((global_epoch, w_quantized))
                 else:
                     w_list.append((global_epoch, copy.deepcopy(self.model_trainer.model.state_dict())))
