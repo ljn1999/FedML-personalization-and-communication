@@ -26,7 +26,7 @@ MODEL='cnn'
 
 DISTRIBUTION='hetero'
 
-LR=0.01
+LR=0.0015
 
 OPT=adam
 
@@ -36,11 +36,13 @@ GROUP_NUM=3
 
 GLOBAL_COMM_ROUND=4
 
-GROUP_COMM_ROUND=3
+GROUP_COMM_ROUND=4
 
 EPOCH=5
 
 QUANTIZATION_MODE='8-bit'
+
+POW_BASE=0.9
 
 python ./main.py \
 --gpu $GPU \
@@ -59,5 +61,6 @@ python ./main.py \
 --group_comm_round $GROUP_COMM_ROUND \
 --epochs $EPOCH \
 --personalize 1 \
---communication 1 \
---quantization_mode $QUANTIZATION_MODE
+--communication 0 \
+--quantization_mode $QUANTIZATION_MODE \
+--pow_base $POW_BASE
