@@ -73,6 +73,7 @@ class Trainer(FedAvgAPI):
 
     def train(self, personalize=False, communication=False, quantize_num=128):
         w_global = self.model_trainer.model.state_dict()
+        self._local_test_on_all_clients(0)
         if communication:
             group_to_client_indexes = self.client_sampling(0, self.args.client_num_in_total,
                                                   self.args.client_num_per_round)

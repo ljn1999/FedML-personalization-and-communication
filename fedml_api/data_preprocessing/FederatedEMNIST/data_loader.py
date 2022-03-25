@@ -13,8 +13,8 @@ logger.setLevel(logging.INFO)
 
 client_ids_train = None
 client_ids_test = None
-DEFAULT_TRAIN_CLIENTS_NUM = 3400
-DEFAULT_TEST_CLIENTS_NUM = 3400
+DEFAULT_TRAIN_CLIENTS_NUM = 100 #3400
+DEFAULT_TEST_CLIENTS_NUM = 100 #3400
 DEFAULT_BATCH_SIZE = 20
 DEFAULT_TRAIN_FILE = 'fed_emnist_train.h5'
 DEFAULT_TEST_FILE = 'fed_emnist_test.h5'
